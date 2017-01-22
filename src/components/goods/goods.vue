@@ -2,8 +2,11 @@
   <div class="goods">
     <div class="menu-wrapper" ref="menuWrapper">
       <ul class="menu">
-        <li class="menu-list border-1px" v-for="item in goods">
-          <span class="name">
+        <li class="menu-list"
+            v-for="(item,index) in goods" :class="{active:currentIndex===index}"
+            @click="selectMenu(index,$event)"
+        >
+          <span class="name border-1px">
             <span class="icon" v-if="item.type>-1">
               <icon :typeSize="4" :type="item.type"></icon>
             </span>{{item.name}}
@@ -13,11 +16,11 @@
     </div>
     <div class="foods-wrapper" ref=foodsWrapper>
       <ul>
-        <li class="foot-list" v-for="item in goods">
+        <li class="foot-list foot-list-hook" v-for="item in goods">
           <h1 class="title">{{item.name}}</h1>
           <ul>
-            <li v-for="food in item.foods" class="foot-item">
-              <div class="content-wrapper">
+            <li v-for="food in item.foods" class="">
+              <div class="content-wrapper border-1px">
                 <div class="icon">
                   <img :src="food.icon" width="64" height="64"/>
                 </div>
@@ -49,8 +52,22 @@
     },
     data(){
       return {
-        goods: []
+        goods: [],
+        heightList: [],
+        scrollY: 0
       };
+    },
+    computed: {
+      currentIndex(){
+        for (let i = 0; i < this.heightList.length; i++) {
+          let height1 = this.heightList[i];
+          let height2 = this.heightList[i + 1];
+          if (!height2 || (this.scrollY >= height1 && this.scrollY < height2)) {
+            return i;
+          }
+        }
+        return 0;
+      }
     },
     created(){
       this.$http.get('/api/goods').then((res) => {
@@ -59,14 +76,41 @@
           this.goods = res.data;
           this.$nextTick(() => {
             this._initScroll();
+            this._calculateHeight();
           });
         }
       });
     },
     methods: {
+      selectMenu(index, event){
+        if (!event._constructed) {
+          return false;
+        }
+        let foodListHook = this.$refs.foodsWrapper.getElementsByClassName('foot-list-hook');
+        let el = foodListHook[index];
+        this.foodsScroll.scrollToElement(el, 300);
+      },
       _initScroll(){
-        this.menuScroll = new BScroll(this.$refs.menuWrapper, {});
-        this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {});
+        this.menuScroll = new BScroll(this.$refs.menuWrapper, {
+          click: true
+        });
+        this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {
+          click: true,
+          probeType: 3
+        });
+        this.foodsScroll.on('scroll', (pos) => {
+          this.scrollY = Math.abs(Math.round(pos.y));
+        });
+      },
+      _calculateHeight(){
+        let foodListHook = this.$refs.foodsWrapper.getElementsByClassName('foot-list-hook');
+        let height = 0;
+        this.heightList.push(height);
+        for (let i = 0; i < foodListHook.length; i++) {
+          let item = foodListHook[i];
+          height += item.clientHeight;
+          this.heightList.push(height);
+        }
       }
     },
     components: {
@@ -87,28 +131,34 @@
     .menu-wrapper
       flex: 0 0 80px
       .menu
-        padding: 0 12px
         background-color: #f3f5f7
         .menu-list
+          box-sizing border-box
           display: table
           width: 100%
           height: 54px
-          border-1px(rgba(7, 17, 27, .1))
           font-size: 0
+          padding: 0 12px
           &.last-child
-            border: none
+            .name
+              border: none
+          &.active
+            background-color: #fff
+            font-weight: 700
+            border: 0 none
           .icon
             display: inline-block
             width: 12px
             height: 12px
             background-size: 12px 12px
-            margin-right: 4px
+            margin-right: 2px
           .name
             display: table-cell
             vertical-align: middle
             font-size: 12px
             color: rgb(77, 85, 93)
             line-height: 14px
+            border-1px(rgba(7, 17, 27, .1))
     .foods-wrapper
       flex: 1
       .title
