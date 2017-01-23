@@ -30,6 +30,9 @@
                   <p class="sell-count">月售{{food.sellCount}} 好评率{{food.rating}}%</p>
                   <span class="price">￥{{food.price}}</span>
                   <span v-if="food.oldPrice">￥{{food.oldPrice}}</span>
+                  <div class="cartcontrol-wrapper">
+                    <cartcontrol @add="addFood" :food="food"></cartcontrol>
+                  </div>
                 </div>
               </div>
             </li>
@@ -37,12 +40,15 @@
         </li>
       </ul>
     </div>
+    <shopcart ref="shopcart" :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice"></shopcart>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import BScroll from 'better-scroll';
   import icon from 'components/icon/icon';
+  import shopcart from 'components/shopcart/shopcart';
+  import cartcontrol from 'components/cartcontrol/cartcontrol';
   const ERR = 0;
   export default {
     props: {
@@ -111,10 +117,17 @@
           height += item.clientHeight;
           this.heightList.push(height);
         }
+      },
+      addFood(el){
+        this.$nextTick(() => {
+          this.$refs.shopcart.drop(el);
+        });
       }
     },
     components: {
-      icon
+      icon,
+      shopcart,
+      cartcontrol
     }
   };
 </script>
@@ -124,7 +137,7 @@
   .goods
     position: absolute
     top: 174px
-    bottom: 64px
+    bottom: 46px
     width: 100%
     display: flex
     overflow: hidden
@@ -197,6 +210,9 @@
             color: rgb(147, 153, 159)
             font-size: 10px
             line-height: 24px
-
+          .cartcontrol-wrapper
+            position: absolute
+            right: 18px
+            bottom: 18px
 
 </style>
