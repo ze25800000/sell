@@ -1,7 +1,7 @@
 <template>
   <div class="shopcart">
     <div class="content-wrapper">
-      <div class="content-left">
+      <div class="content-left" @click="toggleList">
         <div class="logo-wrapper">
           <div class="logo" :class="{highLight:totalCount>0}">
             <i class="icon-shopping_cart" :class="{highLight:totalCount>0}"></i>
@@ -11,7 +11,7 @@
         <div class="price" :class="{highLight:totalCount>0}">￥{{totalPrice}}</div>
         <div class="desc">另需配送费￥{{deliveryPrice}}元</div>
       </div>
-      <div class="content-right">
+      <div class="content-right" @click.stop.prevent="pay">
         <div class="pay" :class="payClass">{{payDesc}}</div>
       </div>
     </div>
@@ -27,10 +27,34 @@
         </transition>
       </div>
     </div>
+    <transition name=fold>
+      <div class="shopcart-list" v-show="listShow">
+        <div class="header border-1px">
+          <span class="title">购物车</span>
+          <span class="empty" @click="empty">清空</span>
+        </div>
+        <div class="list-content" ref=listContent>
+          <ul>
+            <li class="food border-1px" v-for="food in selectFoods">
+              <span class="name">{{food.name}}</span>
+              <div class="price">￥{{food.price*food.count}}</div>
+              <div class="cartcontrol-wrapper">
+                <cartcontrol :food="food"></cartcontrol>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </transition>
+    <transition name="fade">
+      <div class="list-mask" @click="toggleList" v-show="listShow"></div>
+    </transition>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+  import cartcontrol from 'components/cartcontrol/cartcontrol';
+  import BScroll from 'better-scroll';
   export default {
     data(){
       return {
@@ -41,16 +65,15 @@
           {show: false},
           {show: false}
         ],
-        dropBalls: []
+        dropBalls: [],
+        fold: true
       };
     },
     props: {
       selectFoods: {
         type: Array,
         default(){
-          return [
-            {price: 12, count: 0}
-          ];
+          return [];
         }
       },
       deliveryPrice: {
@@ -83,7 +106,7 @@
           return `￥${this.minPrice}起送`;
         } else if (this.totalPrice < this.minPrice) {
           return `还差￥${deff}起送`;
-        } else if (this.totalPrice > this.minPrice) {
+        } else if (this.totalPrice >= this.minPrice) {
           return `去结算`;
         }
       },
@@ -93,6 +116,25 @@
         } else {
           return 'enough';
         }
+      },
+      listShow(){
+        if (!this.totalCount) {
+          this.fold = true;
+          return false;
+        }
+        let show = !this.fold;
+        if (show) {
+          this.$nextTick(() => {
+            if (!this.scroll) {
+              this.scroll = new BScroll(this.$refs.listContent, {
+                click: true
+              });
+            } else {
+              this.scroll.refresh();
+            }
+          });
+        }
+        return show;
       }
     },
     methods: {
@@ -142,17 +184,39 @@
           ball.show = false;
           el.style.display = 'none';
         }
+      },
+      toggleList(){
+        if (!this.totalCount) {
+          return;
+        }
+        this.fold = !this.fold;
+      },
+      empty(){
+        this.selectFoods.forEach((food) => {
+          food.count = 0;
+        });
+      },
+      pay(){
+        if (this.totalPrice < this.minPrice) {
+          return;
+        }
+        window.alert(`请支付${this.totalPrice}元`);
       }
+    },
+    components: {
+      cartcontrol
     }
   };
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../../common/stylus/mixin.styl"
   .shopcart
     position: fixed
     bottom: 0
     left: 0
     width: 100%
+    z-index: 10
     .content-wrapper
       height: 46px
       display: flex
@@ -239,7 +303,7 @@
             color: rgba(255, 255, 255, .4)
           &.enough
             color: #ffffff
-            background-color: greenyellow
+            background-color: #00b43c
 
     .ball-container
       .ball
@@ -254,4 +318,63 @@
           border-radius: 50%
           background: rgb(0, 160, 220)
           transition: all 0.4s linear
+    .shopcart-list
+      position: absolute
+      left: 0
+      top: 0
+      width: 100%
+      z-index: -1
+      transform: translate3d(0, -100%, 0)
+      &.fold-enter-active, &.fold-leave-active
+        transition: all .5s
+      &.fold-enter, &.fold-leave-active
+        transform: translate3d(0, 0, 0)
+      .header
+        padding: 0 18px
+        background-color: #f3f5f7
+        border-1px(rgba(7, 17, 27, .1))
+        .title
+          font-size: 14px
+          color: rgb(7, 17, 27)
+          line-height: 40px
+        .empty
+          font-size: 14px
+          color: rgb(0, 160, 220)
+          line-height: 40px
+          float: right
+      .list-content
+        padding: 0 18px
+        background-color: #fff
+        max-height: 217px
+        overflow: hidden
+        .food
+          display: flex
+          border-1px(rgba(7, 17, 27, .1))
+          vertical-align: middle
+          .name
+            flex: 6
+            vertical-align: middle
+            font-size: 14px
+            color: rgb(7, 17, 27)
+            line-height: 48px
+          .price
+            flex: 1
+            font-size: 14px
+            font-weight: 700
+            color: rgb(240, 20, 20)
+            line-height: 48px
+          .cartcontrol-wrapper
+            margin-top: 6px
+    .list-mask
+      position: fixed
+      top: 0
+      left: 0
+      width: 100%
+      height: 100%
+      z-index: -2
+      background-color: rgba(7, 17, 27, .6)
+      &.fade-enter-active, &.fade-leave-active
+        transition: opacity .5s
+      &.fade-enter, &.fade-leave-active
+        opacity: 0
 </style>

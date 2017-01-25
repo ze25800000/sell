@@ -30,7 +30,9 @@
       <span class="brand"></span><span class="bulletin">{{seller.bulletin}}</span>
       <i class="icon-keyboard_arrow_right"></i>
     </div>
-    <div class="background-img"><img :src="seller.avatar" width="100%" height="134px"></div>
+    <div class="background-img">
+      <img :src="seller.avatar" width="100%" height="100%">
+    </div>
     <transition name="fade">
       <div class="detail" v-show="detailShow">
         <div class="detail-wrapper clearfix">
@@ -45,7 +47,7 @@
             <ul v-if="seller.supports" class="support">
               <li class="support-item" v-for="(item,index) in seller.supports">
                 <span class="icon">
-                  <icon :type="seller.supports[index].type" :typeSize="1"></icon>
+                  <icon :type="seller.supports[index].type" :typeSize="2"></icon>
                 </span>
                 <span class="text">{{item.description}}</span>
               </li>
@@ -100,6 +102,7 @@
 <style lang="stylus" rel="stylesheet/stylus">
   @import '../../common/stylus/mixin.styl'
   .header
+    position: relative
     background-color: rgba(7, 17, 27, .5)
     color: #ffffff
     overflow: hidden
@@ -196,13 +199,13 @@
       top: 0
       width: 100%
       height: 134px
-      z-index: -1
+      z-index: -10
 
     .detail
       position: fixed
       left: 0
       top: 0
-      z-index: 2
+      z-index: 11
       width: 100%
       height: 100%
       overflow: auto
@@ -259,6 +262,10 @@
               .icon
                 display: inline-block
                 margin-right: 6px
+                width: 12px
+                height: 12px
+                background-size:12px 12px
+                margin-top: 1px
               .text
                 display: inline-block
                 font-size: 12px
