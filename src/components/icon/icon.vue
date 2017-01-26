@@ -1,7 +1,5 @@
 <template>
-  <div class="classMap">
     <div class="icon" :class="typeName[type]"></div>
-  </div>
 </template>
 
 <script type="text/ecmascript-6">
