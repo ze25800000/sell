@@ -82,11 +82,12 @@ git clone https://github.com/ze25800000/sell
 npm install
 ```
 
-启动服务(http://localhost:8080)
+启动服务(http://localhost:8081)
 
 ```
 npm run dev
 ```
+浏览器弹出http://localhost:8081页面时，需要手动修改为http://localhost:8081?id=123
 
 发布代码
 
