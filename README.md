@@ -68,9 +68,8 @@
 - 显示评论 评论筛选
 - 图片左右滑动
 - 商品详情 父子组件的通信
-## 安装
 
-项目地址：（git clone）
+## 安装项目地址：（git clone）
 
 ```
 git clone https://github.com/ze25800000/sell
